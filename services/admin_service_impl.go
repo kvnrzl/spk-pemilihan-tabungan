@@ -3,8 +3,7 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
-	"os"
+	"project_spk_pemilihan_tabungan/config"
 	model "project_spk_pemilihan_tabungan/models"
 	repository "project_spk_pemilihan_tabungan/repositories"
 	"time"
@@ -99,16 +98,11 @@ func (s *AdminServiceImpl) AdminLogin(ctx context.Context, username string, pass
 	if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(password)); err != nil {
 		return "", err
 	}
-
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Issuer:    username,
 		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
 	})
-
-	key := os.Getenv("SECRET_KEY")
-	fmt.Println("this is key:", key)
-
-	token, err := claims.SignedString([]byte(key))
+	token, err := claims.SignedString([]byte(config.JWT_SECRET_KEY))
 	if err != nil {
 		return "", err
 	}

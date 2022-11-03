@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"project_spk_pemilihan_tabungan/config"
 	model "project_spk_pemilihan_tabungan/models"
 	"project_spk_pemilihan_tabungan/services"
 	"time"
@@ -70,7 +71,7 @@ func (c *AdminControllerImpl) AdminLogin(r *gin.Context) {
 	cookie := http.Cookie{
 		Name:    "jwt",
 		Value:   token,
-		Expires: time.Now().Add(time.Hour * 24),
+		Expires: time.Now().Add(config.JWT_EXPIRE_DURATION),
 	}
 
 	// r.SetCookie(cookie.Name, cookie.Value, 86400, cookie.Path, cookie.Domain, cookie.Secure, cookie.HttpOnly)
