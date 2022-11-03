@@ -100,7 +100,7 @@ func (s *AdminServiceImpl) AdminLogin(ctx context.Context, username string, pass
 	}
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Issuer:    username,
-		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+		ExpiresAt: time.Now().Add(config.JWT_EXPIRE_DURATION).Unix(),
 	})
 	token, err := claims.SignedString([]byte(config.JWT_SECRET_KEY))
 	if err != nil {

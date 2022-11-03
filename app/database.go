@@ -19,5 +19,9 @@ func InitDB() *gorm.DB {
 		panic(err)
 	}
 
+	if err := DB.AutoMigrate(&model.Tabungan{}); err != nil {
+		panic(err)
+	}
+
 	return DB
 }

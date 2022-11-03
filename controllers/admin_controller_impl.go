@@ -31,7 +31,7 @@ func (c *AdminControllerImpl) AdminRegister(r *gin.Context) {
 		return
 	}
 
-	newAdmin, err := c.adminService.AdminCreate(r.Request.Context(), admin.Username, admin.Password)
+	result, err := c.adminService.AdminCreate(r.Request.Context(), admin.Username, admin.Password)
 	if err != nil {
 		r.JSON(http.StatusBadRequest, gin.H{
 			"code":  http.StatusBadRequest,
@@ -43,7 +43,7 @@ func (c *AdminControllerImpl) AdminRegister(r *gin.Context) {
 	r.JSON(http.StatusOK, gin.H{
 		"code": http.StatusOK,
 		"data": map[string]any{
-			"admin": newAdmin,
+			"admin": result,
 		},
 	})
 }
@@ -79,10 +79,10 @@ func (c *AdminControllerImpl) AdminLogin(r *gin.Context) {
 	http.SetCookie(r.Writer, &cookie)
 
 	r.JSON(http.StatusOK, gin.H{
-		"code": http.StatusOK,
+		"code":    http.StatusOK,
+		"message": "Login Success",
 		"data": map[string]any{
-			"token":   token,
-			"message": "Login Success",
+			"token": token,
 		},
 	})
 }
@@ -108,9 +108,7 @@ func (c *AdminControllerImpl) AdminLogout(r *gin.Context) {
 	http.SetCookie(r.Writer, &cookie)
 
 	r.JSON(http.StatusOK, gin.H{
-		"code": http.StatusOK,
-		"data": map[string]any{
-			"message": "Logout Success",
-		},
+		"code":    http.StatusOK,
+		"message": "Logout Success",
 	})
 }

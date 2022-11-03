@@ -23,6 +23,9 @@ func InitServer() *gin.Engine {
 	validate := validator.New()
 	adminService := services.NewAdminService(adminRepository, db, validate)
 	adminController := controllers.NewAdminController(adminService)
-	engine := app.NewRouter(adminController)
+	tabunganRepository := repositories.NewTabunganRepository()
+	tabunganService := services.NewTabunganService(tabunganRepository, validate, db)
+	tabunganController := controllers.NewTabunganController(tabunganService)
+	engine := app.NewRouter(adminController, tabunganController)
 	return engine
 }

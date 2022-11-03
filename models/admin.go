@@ -1,11 +1,11 @@
-package model
+package models
 
 import "time"
 
 type Admin struct {
-	ID        uint `gorm:"primarykey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Username  string `json:"username"`
-	Password  string `json:"password"`
+	ID        uint      `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Username  string    `json:"username"`
+	Password  string    `json:"password"`
 }
