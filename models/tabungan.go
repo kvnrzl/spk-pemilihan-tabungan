@@ -3,7 +3,7 @@ package models
 import "time"
 
 type Tabungan struct {
-	ID                     uint      `gorm:"primarykey" json:"id"`
+	ID                     uint      `gorm:"primaryKey" json:"id"`
 	NamaTabungan           string    `json:"nama_tabungan"`
 	SetoranAwal            int       `json:"setoran_awal"`
 	SetoranLanjutanMinimal int       `json:"setoran_lanjutan_minimal"`
@@ -21,4 +21,5 @@ type Tabungan struct {
 /*
 	1. buat yg bertipe data string menjadi UPPERCASE / LOWERCASE (penyeragaman data)
 	2. buat yg bisa mengakses beberapa endpoint harus memiliki cookie name "jwt" / hak admin
+	3. buat collection di postman
 */

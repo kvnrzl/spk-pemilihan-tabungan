@@ -4,6 +4,7 @@ import (
 	"context"
 	"project_spk_pemilihan_tabungan/models"
 	"project_spk_pemilihan_tabungan/repositories"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
@@ -29,6 +30,10 @@ func (s *TabunganServiceImpl) CreateTabungan(ctx context.Context, tabungan *mode
 		return &models.Tabungan{}, err
 	}
 
+	tabungan.NamaTabungan = strings.ToUpper(tabungan.NamaTabungan)
+	tabungan.Fungsionalitas = strings.ToUpper(tabungan.Fungsionalitas)
+	tabungan.KategoriUmurPengguna = strings.ToUpper(tabungan.KategoriUmurPengguna)
+
 	return s.tabunganRepository.Create(ctx, s.DB, tabungan)
 }
 
@@ -52,6 +57,10 @@ func (s *TabunganServiceImpl) UpdateTabungan(ctx context.Context, tabungan *mode
 	if err != nil {
 		return &models.Tabungan{}, err
 	}
+
+	tabungan.NamaTabungan = strings.ToUpper(tabungan.NamaTabungan)
+	tabungan.Fungsionalitas = strings.ToUpper(tabungan.Fungsionalitas)
+	tabungan.KategoriUmurPengguna = strings.ToUpper(tabungan.KategoriUmurPengguna)
 
 	return s.tabunganRepository.Update(ctx, s.DB, tabungan)
 }
