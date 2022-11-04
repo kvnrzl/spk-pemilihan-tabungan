@@ -16,10 +16,3 @@ type Tabungan struct {
 	CreatedAt              time.Time `json:"created_at"`
 	UpdatedAt              time.Time `json:"updated_at"`
 }
-
-//! Perbaikan :
-/*
-	1. buat yg bertipe data string menjadi UPPERCASE / LOWERCASE (penyeragaman data)
-	2. buat yg bisa mengakses beberapa endpoint harus memiliki cookie name "jwt" / hak admin
-	3. buat collection di postman
-*/

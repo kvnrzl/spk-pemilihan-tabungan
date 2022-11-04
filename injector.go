@@ -26,6 +26,10 @@ func InitServer() *gin.Engine {
 		services.NewTabunganService,
 		controllers.NewTabunganController,
 
+		repositories.NewPresetKriteriaRepository,
+		services.NewPresetKriteriaService,
+		controllers.NewPresetKriteriaController,
+
 		app.NewRouter,
 	)
 	return nil

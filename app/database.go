@@ -23,5 +23,9 @@ func InitDB() *gorm.DB {
 		panic(err)
 	}
 
+	if err := DB.AutoMigrate(&model.PresetKriteria{}); err != nil {
+		panic(err)
+	}
+
 	return DB
 }
