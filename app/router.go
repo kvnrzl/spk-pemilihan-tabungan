@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(adminController controllers.AdminController, tabunganController controllers.TabunganController, presetController controllers.PresetKriteriaController) *gin.Engine {
+func NewRouter(adminController controllers.AdminController, tabunganController controllers.TabunganController, presetController controllers.PresetKriteriaController, resultController controllers.ResultController) *gin.Engine {
 	router := gin.Default()
 
 	api := router.Group("/api")
@@ -35,6 +35,11 @@ func NewRouter(adminController controllers.AdminController, tabunganController c
 			presetKriteria.GET("/", presetController.FindFirstPreset)
 			presetKriteria.POST("/create", presetController.CreatePreset)
 			presetKriteria.PUT("/update", presetController.UpdatePreset)
+		}
+
+		result := api.Group("/result")
+		{
+			result.POST("/hitung", resultController.HitungResult)
 		}
 	}
 

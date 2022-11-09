@@ -30,6 +30,8 @@ func InitServer() *gin.Engine {
 		services.NewPresetKriteriaService,
 		controllers.NewPresetKriteriaController,
 
+		controllers.NewResultController,
+
 		app.NewRouter,
 	)
 	return nil

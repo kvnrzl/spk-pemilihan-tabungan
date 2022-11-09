@@ -29,6 +29,7 @@ func InitServer() *gin.Engine {
 	presetKriteriaRepository := repositories.NewPresetKriteriaRepository()
 	presetKriteriaService := services.NewPresetKriteriaService(presetKriteriaRepository, validate, db)
 	presetKriteriaController := controllers.NewPresetKriteriaController(presetKriteriaService)
-	engine := app.NewRouter(adminController, tabunganController, presetKriteriaController)
+	resultController := controllers.NewResultController(tabunganService, presetKriteriaService)
+	engine := app.NewRouter(adminController, tabunganController, presetKriteriaController, resultController)
 	return engine
 }

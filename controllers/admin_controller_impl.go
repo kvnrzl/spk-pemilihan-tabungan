@@ -41,7 +41,8 @@ func (c *AdminControllerImpl) AdminRegister(r *gin.Context) {
 	}
 
 	r.JSON(http.StatusOK, gin.H{
-		"code": http.StatusOK,
+		"code":    http.StatusOK,
+		"message": "register success",
 		"data": map[string]any{
 			"admin": result,
 		},
