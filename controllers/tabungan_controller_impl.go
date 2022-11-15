@@ -50,9 +50,7 @@ func (c *TabunganControllerImpl) CreateTabungan(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":    http.StatusOK,
 		"message": "Success create tabungan",
-		"data": map[string]any{
-			"tabungan": result,
-		},
+		"data":    result,
 	})
 }
 
@@ -77,9 +75,7 @@ func (c *TabunganControllerImpl) DetailTabungan(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":    http.StatusOK,
 		"message": "Success get tabungan",
-		"data": map[string]any{
-			"tabungan": result,
-		},
+		"data":    result,
 	})
 }
 
@@ -96,9 +92,7 @@ func (c *TabunganControllerImpl) ListAllTabungan(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":    http.StatusOK,
 		"message": "Success get all tabungan",
-		"data": map[string]any{
-			"tabungan": result,
-		},
+		"data":    result,
 	})
 }
 
@@ -143,9 +137,7 @@ func (c *TabunganControllerImpl) UpdateTabungan(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":    http.StatusOK,
 		"message": "Success update tabungan",
-		"data": map[string]any{
-			"tabungan": result,
-		},
+		"data":    result,
 	})
 }
 

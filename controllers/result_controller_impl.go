@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"project_spk_pemilihan_tabungan/models"
 	"project_spk_pemilihan_tabungan/services"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 )
@@ -49,7 +51,9 @@ func interpolasiLinear(nilaiKriteria float64, maxKriteria float64, skorMax float
 }
 
 func saw(alternatif NewTabungan, preset *models.PresetKriteria) float64 {
-	return (alternatif.SetoranAwal * preset.SetoranAwal) + (alternatif.SetoranLanjutanMinimal * preset.SetoranLanjutanMinimal) + (alternatif.SaldoMinimum * preset.SaldoMinimum) + (alternatif.SukuBunga * preset.SukuBunga) + (alternatif.BiayaAdmin * preset.BiayaAdmin) + (alternatif.BiayaPenarikanHabis * preset.BiayaPenarikanHabis) + (float64(alternatif.Fungsionalitas) * preset.Fungsionalitas) + (float64(alternatif.KategoriUmurPengguna) * preset.KategoriUmurPengguna)
+	skor := (alternatif.SetoranAwal * preset.SetoranAwal) + (alternatif.SetoranLanjutanMinimal * preset.SetoranLanjutanMinimal) + (alternatif.SaldoMinimum * preset.SaldoMinimum) + (alternatif.SukuBunga * preset.SukuBunga) + (alternatif.BiayaAdmin * preset.BiayaAdmin) + (alternatif.BiayaPenarikanHabis * preset.BiayaPenarikanHabis) + (float64(alternatif.Fungsionalitas) * preset.Fungsionalitas) + (float64(alternatif.KategoriUmurPengguna) * preset.KategoriUmurPengguna)
+
+	return math.Round(skor*100) / 100
 }
 
 type ResultControllerImpl struct {
@@ -172,6 +176,10 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 
 		hasilAkhir = append(hasilAkhir, newHasilAkhir)
 	}
+
+	sort.Slice(hasilAkhir, func(i, j int) bool {
+		return hasilAkhir[i].Skor > hasilAkhir[j].Skor
+	})
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":    http.StatusOK,

@@ -8,6 +8,8 @@ import (
 
 func NewRouter(adminController controllers.AdminController, tabunganController controllers.TabunganController, presetController controllers.PresetKriteriaController, resultController controllers.ResultController) *gin.Engine {
 	router := gin.Default()
+	router.Use(CORSMiddleware())
+	// router.RedirectTrailingSlash = false
 
 	api := router.Group("/api")
 	{
