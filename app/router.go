@@ -32,7 +32,7 @@ func NewRouter(adminController controllers.AdminController, tabunganController c
 			}
 		}
 
-		presetKriteria := api.Group("/preset-kriteria")
+		presetKriteria := api.Group("/preset")
 		{
 			presetKriteria.GET("/", presetController.FindFirstPreset)
 			presetKriteria.POST("/create", presetController.CreatePreset)

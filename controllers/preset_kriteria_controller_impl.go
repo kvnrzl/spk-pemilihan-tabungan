@@ -48,9 +48,7 @@ func (c *PresetKriteriaControllerImpl) CreatePreset(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":    http.StatusOK,
 		"message": "Success create preset kriteria",
-		"result": map[string]any{
-			"preset_kriteria": result,
-		},
+		"data":    result,
 	})
 }
 
@@ -67,9 +65,7 @@ func (c *PresetKriteriaControllerImpl) FindFirstPreset(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":    http.StatusOK,
 		"message": "Success get preset kriteria",
-		"result": map[string]any{
-			"preset_kriteria": result,
-		},
+		"data":    result,
 	})
 }
 
@@ -103,8 +99,6 @@ func (c *PresetKriteriaControllerImpl) UpdatePreset(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":    http.StatusOK,
 		"message": "Success update preset kriteria",
-		"result": map[string]any{
-			"preset_kriteria": result,
-		},
+		"data":    result,
 	})
 }

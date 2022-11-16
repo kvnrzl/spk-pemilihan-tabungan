@@ -84,7 +84,8 @@ func (c *AdminControllerImpl) AdminLogin(r *gin.Context) {
 		"code":    http.StatusOK,
 		"message": "Login Success",
 		"data": map[string]any{
-			"token": token,
+			"username": admin.Username,
+			"token":    token,
 		},
 	})
 }

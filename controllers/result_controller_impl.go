@@ -35,6 +35,7 @@ type NewTabungan struct {
 }
 
 type HasilAkhir struct {
+	ID           uint    `json:"id"`
 	NamaTabungan string  `json:"nama_tabungan"`
 	Skor         float64 `json:"skor"`
 }
@@ -91,6 +92,7 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 	var maxSukuBunga float64
 	for _, tabungan := range result {
 		var newTabungan NewTabungan
+		newTabungan.ID = tabungan.ID
 		newTabungan.NamaTabungan = tabungan.NamaTabungan
 
 		newTabungan.SetoranAwal = float64(tabungan.SetoranAwal - nilaiIdeal.SetoranAwal)
@@ -143,6 +145,8 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 	var newTabunganInterpolasi []NewTabungan
 	for _, tabungan := range newTabungans {
 		var newTabungan NewTabungan
+
+		newTabungan.ID = tabungan.ID
 		newTabungan.NamaTabungan = tabungan.NamaTabungan
 		newTabungan.SetoranAwal = interpolasiLinear(tabungan.SetoranAwal, maxSetoranAwal, 5, 1)
 		newTabungan.SetoranLanjutanMinimal = interpolasiLinear(tabungan.SetoranLanjutanMinimal, maxSetoranLanjutanMinimal, 5, 1)
@@ -171,6 +175,8 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 	var hasilAkhir []HasilAkhir
 	for _, tabungan := range newTabunganInterpolasi {
 		var newHasilAkhir HasilAkhir
+
+		newHasilAkhir.ID = tabungan.ID
 		newHasilAkhir.NamaTabungan = tabungan.NamaTabungan
 		newHasilAkhir.Skor = saw(tabungan, preset)
 
