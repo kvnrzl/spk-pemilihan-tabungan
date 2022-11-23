@@ -38,5 +38,17 @@ func InitDB() *gorm.DB {
 	if err := DB.AutoMigrate(&model.KategoriUmurPengguna{}); err != nil {
 		panic(err)
 	}
+
+	if err := DB.AutoMigrate(&model.Result{}); err != nil {
+		panic(err)
+	}
+
+	// if err := DB.AutoMigrate(&model.TabunganSkor{}); err != nil {
+	// 	panic(err)
+	// }
+
+	if err := DB.AutoMigrate(&model.BobotKriteria{}); err != nil {
+		panic(err)
+	}
 	return DB
 }

@@ -89,6 +89,8 @@ func (c *TabunganControllerImpl) ListAllTabungan(ctx *gin.Context) {
 		return
 	}
 
+	// fmt.Println("INI ISI DARI HEADER AUTHORIZATION", ctx.GetHeader("Authorization"))
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":    http.StatusOK,
 		"message": "Success get all tabungan",

@@ -26,9 +26,9 @@ type NewTabungan struct {
 	SetoranLanjutanMinimal float64 `json:"setoran_lanjutan_minimal"`
 	SaldoMinimum           float64 `json:"saldo_minimum"`
 	SukuBunga              float64 `json:"suku_bunga"`
-	Fungsionalitas         uint    `json:"fungsionalitas"`
 	BiayaAdmin             float64 `json:"biaya_admin"`
 	BiayaPenarikanHabis    float64 `json:"biaya_penarikan_habis"`
+	Fungsionalitas         uint    `json:"fungsionalitas"`
 	KategoriUmurPengguna   uint    `json:"kategori_umur_pengguna"`
 	// CreatedAt              time.Time `json:"created_at"`
 	// UpdatedAt              time.Time `json:"updated_at"`
@@ -40,6 +40,13 @@ type HasilAkhir struct {
 	Skor         float64 `json:"skor"`
 }
 
+type InputRecomendation struct {
+	NilaiIdealID     uint                  `json:"nilai_ideal_id"`
+	NilaiIdeal       models.NilaiIdeal     `json:"nilai_ideal"`
+	PresetKriteriaID uint                  `json:"preset_kriteria_id"`
+	PresetKriteria   models.PresetKriteria `json:"preset_kriteria"`
+}
+
 func interpolasiLinear(nilaiKriteria float64, maxKriteria float64, skorMax float64, skorMin float64) float64 {
 	var skor float64
 	if nilaiKriteria < 0 {
@@ -48,10 +55,18 @@ func interpolasiLinear(nilaiKriteria float64, maxKriteria float64, skorMax float
 		skor = (nilaiKriteria/maxKriteria)*(skorMin-skorMax) + skorMax
 	}
 
-	return skor
+	return math.Round(skor*100) / 100
 }
 
-func saw(alternatif NewTabungan, preset *models.PresetKriteria) float64 {
+func interpolasiLinearBenefit(data float64, dataMin float64, dataMax float64) float64 {
+	return ((data - dataMin) / (dataMax - dataMin) * (5 - 1)) + 1
+}
+
+func interpolasiLinearCost(data float64, dataMin float64, dataMax float64) float64 {
+	return ((data - dataMin) / (dataMax - dataMin) * (1 - 5)) + 5
+}
+
+func saw(alternatif NewTabungan, preset models.PresetKriteria) float64 {
 	skor := (alternatif.SetoranAwal * preset.SetoranAwal) + (alternatif.SetoranLanjutanMinimal * preset.SetoranLanjutanMinimal) + (alternatif.SaldoMinimum * preset.SaldoMinimum) + (alternatif.SukuBunga * preset.SukuBunga) + (alternatif.BiayaAdmin * preset.BiayaAdmin) + (alternatif.BiayaPenarikanHabis * preset.BiayaPenarikanHabis) + (float64(alternatif.Fungsionalitas) * preset.Fungsionalitas) + (float64(alternatif.KategoriUmurPengguna) * preset.KategoriUmurPengguna)
 
 	return math.Round(skor*100) / 100
@@ -67,8 +82,19 @@ func NewResultController(tabunganService services.TabunganService, presetKriteri
 }
 
 func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
-	var nilaiIdeal models.NilaiIdeal
-	err := ctx.ShouldBindJSON(&nilaiIdeal)
+	// var nilaiIdeal models.NilaiIdeal
+	// err := ctx.ShouldBindJSON(&nilaiIdeal)
+	// if err != nil {
+	// 	ctx.JSON(400, gin.H{
+	// 		"code":  400,
+	// 		"error": err.Error(),
+	// 	})
+	// 	return
+	// }
+
+	var input InputRecomendation
+
+	err := ctx.ShouldBindJSON(&input)
 	if err != nil {
 		ctx.JSON(400, gin.H{
 			"code":  400,
@@ -76,6 +102,8 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 		})
 		return
 	}
+
+	fmt.Println("Sampe should bind json aman nih")
 
 	result, err := c.tabunganService.FindAllTabungan(ctx.Request.Context())
 	if err != nil {
@@ -86,60 +114,116 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 		return
 	}
 
+	fmt.Println("Sampe find all tabungan aman nih")
+
 	// SKORING
 	var newTabungans []NewTabungan
-	var maxSetoranAwal, maxSetoranLanjutanMinimal, maxSaldoMinimum, maxBiayaAdmin, maxBiayaPenarikanHabis float64
-	var maxSukuBunga float64
+	var maxSetoranAwal, maxSetoranLanjutanMinimal, maxSaldoMinimum, maxBiayaAdmin, maxBiayaPenarikanHabis, maxSukuBunga float64
+	var minSukuBunga = result[1].SukuBunga
+	var minBiayaAdmin = float64(result[1].BiayaAdmin)
+	var minBiayaPenarikanHabis = float64(result[1].BiayaPenarikanHabis)
+
 	for _, tabungan := range result {
 		var newTabungan NewTabungan
+
 		newTabungan.ID = tabungan.ID
 		newTabungan.NamaTabungan = tabungan.NamaTabungan
 
-		newTabungan.SetoranAwal = float64(tabungan.SetoranAwal - nilaiIdeal.SetoranAwal)
-		if newTabungan.SetoranAwal > maxSetoranAwal {
-			maxSetoranAwal = newTabungan.SetoranAwal
+		newTabungan.SetoranAwal = float64(tabungan.SetoranAwal - input.NilaiIdeal.SetoranAwal)
+		newTabungan.SetoranLanjutanMinimal = float64(tabungan.SetoranLanjutanMinimal - input.NilaiIdeal.SetoranLanjutanMinimal)
+		newTabungan.SaldoMinimum = float64(tabungan.SaldoMinimum - input.NilaiIdeal.SaldoMinimum)
+
+		if input.NilaiIdeal.SukuBunga == -1 {
+			newTabungan.SukuBunga = float64(tabungan.SukuBunga)
+			if tabungan.SukuBunga < minSukuBunga {
+				minSukuBunga = tabungan.SukuBunga
+			}
+			if tabungan.SukuBunga > maxSukuBunga {
+				maxSukuBunga = tabungan.SukuBunga
+			}
+		} else {
+			newTabungan.SukuBunga = tabungan.SukuBunga - input.NilaiIdeal.SukuBunga
+			if math.Abs(newTabungan.SukuBunga) > maxSukuBunga {
+				maxSukuBunga = math.Abs(newTabungan.SukuBunga)
+			}
 		}
-		newTabungan.SetoranLanjutanMinimal = float64(tabungan.SetoranLanjutanMinimal - nilaiIdeal.SetoranLanjutanMinimal)
-		if newTabungan.SetoranLanjutanMinimal > maxSetoranLanjutanMinimal {
-			maxSetoranLanjutanMinimal = newTabungan.SetoranLanjutanMinimal
+		if input.NilaiIdeal.BiayaAdmin == -1 {
+			newTabungan.BiayaAdmin = float64(tabungan.BiayaAdmin)
+			if float64(tabungan.BiayaAdmin) < minBiayaAdmin {
+				minBiayaAdmin = float64(tabungan.BiayaAdmin)
+			}
+			if float64(tabungan.BiayaAdmin) > maxBiayaAdmin {
+				maxBiayaAdmin = float64(tabungan.BiayaAdmin)
+			}
+		} else {
+			newTabungan.BiayaAdmin = float64(tabungan.BiayaAdmin - input.NilaiIdeal.BiayaAdmin)
+			if math.Abs(newTabungan.BiayaAdmin) > maxBiayaAdmin {
+				maxBiayaAdmin = math.Abs(newTabungan.BiayaAdmin)
+			}
 		}
-		newTabungan.SaldoMinimum = float64(tabungan.SaldoMinimum - nilaiIdeal.SaldoMinimum)
-		if newTabungan.SaldoMinimum > maxSaldoMinimum {
-			maxSaldoMinimum = newTabungan.SaldoMinimum
-		}
-		newTabungan.SukuBunga = tabungan.SukuBunga - nilaiIdeal.SukuBunga
-		if newTabungan.SukuBunga > maxSukuBunga {
-			maxSukuBunga = newTabungan.SukuBunga
-		}
-		newTabungan.BiayaAdmin = float64(tabungan.BiayaAdmin - nilaiIdeal.BiayaAdmin)
-		if newTabungan.BiayaAdmin > maxBiayaAdmin {
-			maxBiayaAdmin = newTabungan.BiayaAdmin
-		}
-		newTabungan.BiayaPenarikanHabis = float64(tabungan.BiayaPenarikanHabis - nilaiIdeal.BiayaPenarikanHabis)
-		if newTabungan.BiayaPenarikanHabis > maxBiayaPenarikanHabis {
-			maxBiayaPenarikanHabis = newTabungan.BiayaPenarikanHabis
+		if input.NilaiIdeal.BiayaPenarikanHabis == -1 {
+			newTabungan.BiayaPenarikanHabis = float64(tabungan.BiayaPenarikanHabis)
+			if float64(tabungan.BiayaPenarikanHabis) < minBiayaPenarikanHabis {
+				minBiayaPenarikanHabis = float64(tabungan.BiayaPenarikanHabis)
+			}
+			if float64(tabungan.BiayaPenarikanHabis) > maxBiayaPenarikanHabis {
+				maxBiayaPenarikanHabis = float64(tabungan.BiayaPenarikanHabis)
+			}
+		} else {
+			newTabungan.BiayaPenarikanHabis = float64(tabungan.BiayaPenarikanHabis - input.NilaiIdeal.BiayaPenarikanHabis)
+			if math.Abs(newTabungan.BiayaPenarikanHabis) > maxBiayaPenarikanHabis {
+				maxBiayaPenarikanHabis = math.Abs(newTabungan.BiayaPenarikanHabis)
+			}
 		}
 
+		if math.Abs(newTabungan.SetoranAwal) > maxSetoranAwal {
+			maxSetoranAwal = math.Abs(newTabungan.SetoranAwal)
+		}
+		if math.Abs(newTabungan.SetoranLanjutanMinimal) > maxSetoranLanjutanMinimal {
+			maxSetoranLanjutanMinimal = math.Abs(newTabungan.SetoranLanjutanMinimal)
+		}
+		if math.Abs(newTabungan.SaldoMinimum) > maxSaldoMinimum {
+			maxSaldoMinimum = math.Abs(newTabungan.SaldoMinimum)
+		}
+		// if math.Abs(newTabungan.SukuBunga) > maxSukuBunga {
+		// 	maxSukuBunga = math.Abs(newTabungan.SukuBunga)
+		// }
+		// if math.Abs(newTabungan.BiayaAdmin) > maxBiayaAdmin {
+		// 	maxBiayaAdmin = math.Abs(newTabungan.BiayaAdmin)
+		// }
+		// if math.Abs(newTabungan.BiayaPenarikanHabis) > maxBiayaPenarikanHabis {
+		// 	maxBiayaPenarikanHabis = math.Abs(newTabungan.BiayaPenarikanHabis)
+		// }
+
 		if tabungan.Fungsionalitas == "INVESTASI" {
-			newTabungan.Fungsionalitas = nilaiIdeal.Fungsionalitas.Investasi
+			newTabungan.Fungsionalitas = input.NilaiIdeal.Fungsionalitas.Investasi
 		} else if tabungan.Fungsionalitas == "BISNIS" {
-			newTabungan.Fungsionalitas = nilaiIdeal.Fungsionalitas.Bisnis
+			newTabungan.Fungsionalitas = input.NilaiIdeal.Fungsionalitas.Bisnis
 		} else {
-			newTabungan.Fungsionalitas = nilaiIdeal.Fungsionalitas.Transaksional
+			newTabungan.Fungsionalitas = input.NilaiIdeal.Fungsionalitas.Transaksional
 		}
 
 		if tabungan.KategoriUmurPengguna == "DEWASA" {
-			newTabungan.KategoriUmurPengguna = nilaiIdeal.KategoriUmurPengguna.Dewasa
+			newTabungan.KategoriUmurPengguna = input.NilaiIdeal.KategoriUmurPengguna.Dewasa
 		} else if tabungan.KategoriUmurPengguna == "REMAJA" {
-			newTabungan.KategoriUmurPengguna = nilaiIdeal.KategoriUmurPengguna.Remaja
+			newTabungan.KategoriUmurPengguna = input.NilaiIdeal.KategoriUmurPengguna.Remaja
 		} else {
-			newTabungan.KategoriUmurPengguna = nilaiIdeal.KategoriUmurPengguna.Anak
+			newTabungan.KategoriUmurPengguna = input.NilaiIdeal.KategoriUmurPengguna.Anak
 		}
 
 		newTabungans = append(newTabungans, newTabungan)
 	}
-
+	fmt.Println("isi dari maxSetoranAwal: ", maxSetoranAwal)
+	fmt.Println("isi dari maxSetoranLanjutanMinimal: ", maxSetoranLanjutanMinimal)
+	fmt.Println("isi dari maxSaldoMinimum: ", maxSaldoMinimum)
+	fmt.Println("isi dari maxsukubunga: ", maxSukuBunga)
+	fmt.Println("isi dari maxBiayaAdmin: ", maxBiayaAdmin)
+	fmt.Println("isi dari maxbiayapenarikan habis: ", maxBiayaPenarikanHabis)
 	fmt.Println("isi dari newtabungans: ", newTabungans)
+
+	fmt.Println("isi dari minSukuBunga: ", minSukuBunga)
+	fmt.Println("isi dari minBiayaAdmin: ", minBiayaAdmin)
+	fmt.Println("isi dari minBiayaPenarikanHabis: ", minBiayaPenarikanHabis)
 
 	// INTERPOLASI
 	var newTabunganInterpolasi []NewTabungan
@@ -151,9 +235,24 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 		newTabungan.SetoranAwal = interpolasiLinear(tabungan.SetoranAwal, maxSetoranAwal, 5, 1)
 		newTabungan.SetoranLanjutanMinimal = interpolasiLinear(tabungan.SetoranLanjutanMinimal, maxSetoranLanjutanMinimal, 5, 1)
 		newTabungan.SaldoMinimum = interpolasiLinear(tabungan.SaldoMinimum, maxSaldoMinimum, 5, 1)
-		newTabungan.SukuBunga = interpolasiLinear(tabungan.SukuBunga, maxSukuBunga, 5, 1)
-		newTabungan.BiayaAdmin = interpolasiLinear(tabungan.BiayaAdmin, maxBiayaAdmin, 5, 1)
-		newTabungan.BiayaPenarikanHabis = interpolasiLinear(tabungan.BiayaPenarikanHabis, maxBiayaPenarikanHabis, 5, 1)
+		if input.NilaiIdeal.SukuBunga == -1 {
+			newTabungan.SukuBunga = interpolasiLinearBenefit(tabungan.SukuBunga, minSukuBunga, maxSukuBunga)
+		} else {
+			newTabungan.SukuBunga = interpolasiLinear(tabungan.SukuBunga, maxSukuBunga, 5, 1)
+		}
+
+		if input.NilaiIdeal.BiayaAdmin == -1 {
+			newTabungan.BiayaAdmin = interpolasiLinearCost(tabungan.BiayaAdmin, minBiayaAdmin, maxBiayaAdmin)
+		} else {
+			newTabungan.BiayaAdmin = interpolasiLinear(tabungan.BiayaAdmin, maxBiayaAdmin, 5, 1)
+		}
+
+		if input.NilaiIdeal.BiayaPenarikanHabis == -1 {
+			newTabungan.BiayaPenarikanHabis = interpolasiLinearCost(tabungan.BiayaPenarikanHabis, minBiayaPenarikanHabis, maxBiayaPenarikanHabis)
+		} else {
+			newTabungan.BiayaPenarikanHabis = interpolasiLinear(tabungan.BiayaPenarikanHabis, maxBiayaPenarikanHabis, 5, 1)
+		}
+
 		newTabungan.Fungsionalitas = tabungan.Fungsionalitas
 		newTabungan.KategoriUmurPengguna = tabungan.KategoriUmurPengguna
 
@@ -162,14 +261,24 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 
 	fmt.Println("isi dari newtabunganinterpolasi : ", newTabunganInterpolasi)
 
-	preset, err := c.presetKriteriaService.FindFirstPreset(ctx.Request.Context())
-	if err != nil {
-		ctx.JSON(500, gin.H{
-			"code":  500,
-			"error": err.Error(),
-		})
-		return
-	}
+	// preset, err := c.presetKriteriaService.FindFirstPreset(ctx.Request.Context())
+	// if err != nil {
+	// 	ctx.JSON(500, gin.H{
+	// 		"code":  500,
+	// 		"error": err.Error(),
+	// 	})
+	// 	return
+	// }
+
+	// var preset models.PresetKriteria
+
+	// if err := ctx.ShouldBindJSON(&preset); err != nil {
+	// 	ctx.JSON(http.StatusBadRequest, gin.H{
+	// 		"code":  http.StatusBadRequest,
+	// 		"error": err.Error(),
+	// 	})
+	// 	return
+	// }
 
 	// METODE SAW
 	var hasilAkhir []HasilAkhir
@@ -178,7 +287,7 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 
 		newHasilAkhir.ID = tabungan.ID
 		newHasilAkhir.NamaTabungan = tabungan.NamaTabungan
-		newHasilAkhir.Skor = saw(tabungan, preset)
+		newHasilAkhir.Skor = saw(tabungan, input.PresetKriteria)
 
 		hasilAkhir = append(hasilAkhir, newHasilAkhir)
 	}
