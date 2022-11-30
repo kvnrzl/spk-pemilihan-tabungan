@@ -34,7 +34,7 @@ func (r *AdminRepositoryImpl) FindByUsername(ctx context.Context, DB *gorm.DB, u
 	}
 
 	if result.RowsAffected == 0 {
-		return &model.Admin{}, fmt.Errorf("Username %s not found", username)
+		return &model.Admin{}, fmt.Errorf("Username or password is wrong")
 	}
 
 	return &model.Admin{

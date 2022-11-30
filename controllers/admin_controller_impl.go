@@ -62,8 +62,8 @@ func (c *AdminControllerImpl) AdminLogin(r *gin.Context) {
 
 	token, err := c.adminService.AdminLogin(r.Request.Context(), admin.Username, admin.Password)
 	if err != nil {
-		r.JSON(http.StatusInternalServerError, gin.H{
-			"code":  http.StatusInternalServerError,
+		r.JSON(http.StatusBadRequest, gin.H{
+			"code":  http.StatusBadRequest,
 			"error": err.Error(),
 		})
 		return
@@ -75,8 +75,8 @@ func (c *AdminControllerImpl) AdminLogin(r *gin.Context) {
 		Expires: time.Now().Add(config.JWT_EXPIRE_DURATION),
 		Path:    "/", // cookie will be available on all pages
 		// HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
-		Secure:   true,
+		// SameSite: http.SameSiteNoneMode,
+		// Secure:   true,
 	}
 
 	// r.SetCookie(cookie.Name, cookie.Value, 86400, cookie.Path, cookie.Domain, cookie.Secure, cookie.HttpOnly)
@@ -109,8 +109,8 @@ func (c *AdminControllerImpl) AdminLogout(r *gin.Context) {
 		Expires: time.Now().Add(-time.Hour),
 		Path:    "/", // cookie will be available on all pages
 		// HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
-		Secure:   true,
+		// SameSite: http.SameSiteNoneMode,
+		// Secure:   true,
 	}
 
 	// r.SetCookie(cookie.Name, cookie.Value, -1, cookie.Path, cookie.Domain, cookie.Secure, cookie.HttpOnly)

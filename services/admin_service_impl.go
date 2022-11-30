@@ -79,11 +79,11 @@ func (s *AdminServiceImpl) AdminDelete(ctx context.Context, id int) error {
 
 func (s *AdminServiceImpl) AdminLogin(ctx context.Context, username string, password string) (string, error) {
 	if err := s.validate.Var(username, "required"); err != nil {
-		return "", err
+		return "", errors.New("Username is required")
 	}
 
 	if err := s.validate.Var(password, "required"); err != nil {
-		return "", err
+		return "", errors.New("Password is required")
 	}
 
 	DB := s.db.Begin()
@@ -96,7 +96,7 @@ func (s *AdminServiceImpl) AdminLogin(ctx context.Context, username string, pass
 	DB.Commit()
 
 	if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(password)); err != nil {
-		return "", err
+		return "", errors.New("Username or password is wrong")
 	}
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Issuer:    username,
