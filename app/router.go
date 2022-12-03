@@ -11,6 +11,10 @@ func NewRouter(adminController controllers.AdminController, tabunganController c
 	router.Use(CORSMiddleware())
 	// router.RedirectTrailingSlash = false
 
+	router.GET("/", func(r *gin.Context) {
+		r.JSON(200, "API service is ready!")
+	})
+
 	api := router.Group("/api")
 	{
 		admin := api.Group("/admin")

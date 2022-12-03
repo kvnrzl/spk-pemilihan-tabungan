@@ -39,7 +39,7 @@ func InitDB() *gorm.DB {
 		panic(err)
 	}
 
-	if err := DB.AutoMigrate(&model.Result{}); err != nil {
+	if err := DB.AutoMigrate(&model.InputRecomendation{}); err != nil {
 		panic(err)
 	}
 
@@ -50,5 +50,9 @@ func InitDB() *gorm.DB {
 	if err := DB.AutoMigrate(&model.BobotKriteria{}); err != nil {
 		panic(err)
 	}
+
+	// if err := DB.AutoMigrate(&controllers.InputRecomendation{}); err != nil {
+	// 	panic(err)
+	// }
 	return DB
 }

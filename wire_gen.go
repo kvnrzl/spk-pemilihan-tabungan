@@ -18,18 +18,20 @@ import (
 // Injectors from injector.go:
 
 func InitServer() *gin.Engine {
-	adminRepository := repositories.NewAdminRepository()
 	db := app.InitDB()
 	validate := validator.New()
-	adminService := services.NewAdminService(adminRepository, db, validate)
-	adminController := controllers.NewAdminController(adminService)
+	adminRepository := repositories.NewAdminRepository()
 	tabunganRepository := repositories.NewTabunganRepository()
-	tabunganService := services.NewTabunganService(tabunganRepository, validate, db)
-	tabunganController := controllers.NewTabunganController(tabunganService)
 	presetKriteriaRepository := repositories.NewPresetKriteriaRepository()
+	inputRecomendationRepository := repositories.NewInputRecomendationRepository()
+	adminService := services.NewAdminService(adminRepository, db, validate)
+	tabunganService := services.NewTabunganService(tabunganRepository, validate, db)
 	presetKriteriaService := services.NewPresetKriteriaService(presetKriteriaRepository, validate, db)
+	inputRecomendationService := services.NewInputRecomendationService(inputRecomendationRepository, db, validate)
+	adminController := controllers.NewAdminController(adminService)
+	tabunganController := controllers.NewTabunganController(tabunganService)
 	presetKriteriaController := controllers.NewPresetKriteriaController(presetKriteriaService)
-	resultController := controllers.NewResultController(tabunganService, presetKriteriaService)
+	resultController := controllers.NewResultController(tabunganService, presetKriteriaService, inputRecomendationService)
 	engine := app.NewRouter(adminController, tabunganController, presetKriteriaController, resultController)
 	return engine
 }

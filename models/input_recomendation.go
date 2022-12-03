@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type Result struct {
+type InputRecomendation struct {
 	ID              uint          `json:"id"`
 	NilaiIdealID    uint          `json:"nilai_ideal_id"`
 	NilaiIdeal      NilaiIdeal    `json:"nilai_ideal"`

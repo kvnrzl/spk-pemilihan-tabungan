@@ -11,13 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Output struct {
-	ID           string          `json:"id"`
-	NilaiIdealID uint            `json:"nilai_ideal_id"`
-	TabunganID   uint            `json:"tabungan_id"`
-	Tabungan     models.Tabungan `json:"tabungan"`
-	Skor         float64         `json:"skor"`
-}
+// type Output struct {
+// 	ID           string          `json:"id"`
+// 	NilaiIdealID uint            `json:"nilai_ideal_id"`
+// 	TabunganID   uint            `json:"tabungan_id"`
+// 	Tabungan     models.Tabungan `json:"tabungan"`
+// 	Skor         float64         `json:"skor"`
+// }
 
 type NewTabungan struct {
 	ID                     uint    `gorm:"primaryKey" json:"id"`
@@ -40,12 +40,13 @@ type HasilAkhir struct {
 	Skor         float64 `json:"skor"`
 }
 
-type InputRecomendation struct {
-	NilaiIdealID     uint                  `json:"nilai_ideal_id"`
-	NilaiIdeal       models.NilaiIdeal     `json:"nilai_ideal"`
-	PresetKriteriaID uint                  `json:"preset_kriteria_id"`
-	PresetKriteria   models.PresetKriteria `json:"preset_kriteria"`
-}
+// type InputRecomendation struct {
+// 	ID               uint                  `json:"id"`
+// 	NilaiIdealID     uint                  `json:"nilai_ideal_id"`
+// 	NilaiIdeal       models.NilaiIdeal     `json:"nilai_ideal"`
+// 	PresetKriteriaID uint                  `json:"preset_kriteria_id"`
+// 	PresetKriteria   models.PresetKriteria `json:"preset_kriteria"`
+// }
 
 func interpolasiLinear(nilaiKriteria float64, maxKriteria float64, skorMax float64, skorMin float64) float64 {
 	var skor float64
@@ -66,19 +67,31 @@ func interpolasiLinearCost(data float64, dataMin float64, dataMax float64) float
 	return ((data - dataMin) / (dataMax - dataMin) * (1 - 5)) + 5
 }
 
-func saw(alternatif NewTabungan, preset models.PresetKriteria) float64 {
-	skor := (alternatif.SetoranAwal * preset.SetoranAwal) + (alternatif.SetoranLanjutanMinimal * preset.SetoranLanjutanMinimal) + (alternatif.SaldoMinimum * preset.SaldoMinimum) + (alternatif.SukuBunga * preset.SukuBunga) + (alternatif.BiayaAdmin * preset.BiayaAdmin) + (alternatif.BiayaPenarikanHabis * preset.BiayaPenarikanHabis) + (float64(alternatif.Fungsionalitas) * preset.Fungsionalitas) + (float64(alternatif.KategoriUmurPengguna) * preset.KategoriUmurPengguna)
+func saw(alternatif NewTabungan, preset models.BobotKriteria) float64 {
+	skor := (alternatif.SetoranAwal * preset.SetoranAwal) +
+		(alternatif.SetoranLanjutanMinimal * preset.SetoranLanjutanMinimal) +
+		(alternatif.SaldoMinimum * preset.SaldoMinimum) +
+		(alternatif.SukuBunga * preset.SukuBunga) +
+		(alternatif.BiayaAdmin * preset.BiayaAdmin) +
+		(alternatif.BiayaPenarikanHabis * preset.BiayaPenarikanHabis) +
+		(float64(alternatif.Fungsionalitas) * preset.Fungsionalitas) +
+		(float64(alternatif.KategoriUmurPengguna) * preset.KategoriUmurPengguna)
 
 	return math.Round(skor*100) / 100
 }
 
 type ResultControllerImpl struct {
-	tabunganService       services.TabunganService
-	presetKriteriaService services.PresetKriteriaService
+	tabunganService           services.TabunganService
+	presetKriteriaService     services.PresetKriteriaService
+	inputRecomendationService services.InputRecomendationService
 }
 
-func NewResultController(tabunganService services.TabunganService, presetKriteriaService services.PresetKriteriaService) ResultController {
-	return &ResultControllerImpl{tabunganService, presetKriteriaService}
+func NewResultController(tabunganService services.TabunganService, presetKriteriaService services.PresetKriteriaService, inputService services.InputRecomendationService) ResultController {
+	return &ResultControllerImpl{
+		tabunganService:           tabunganService,
+		presetKriteriaService:     presetKriteriaService,
+		inputRecomendationService: inputService,
+	}
 }
 
 func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
@@ -92,7 +105,7 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 	// 	return
 	// }
 
-	var input InputRecomendation
+	var input models.InputRecomendation
 
 	err := ctx.ShouldBindJSON(&input)
 	if err != nil {
@@ -103,7 +116,14 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("Sampe should bind json aman nih")
+	_, err = c.inputRecomendationService.Create(ctx, &input)
+	if err != nil {
+		ctx.JSON(400, gin.H{
+			"code":  400,
+			"error": err.Error(),
+		})
+		return
+	}
 
 	result, err := c.tabunganService.FindAllTabungan(ctx.Request.Context())
 	if err != nil {
@@ -113,8 +133,6 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 		})
 		return
 	}
-
-	fmt.Println("Sampe find all tabungan aman nih")
 
 	// SKORING
 	var newTabungans []NewTabungan
@@ -280,6 +298,8 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 	// 	return
 	// }
 
+	fmt.Println("isi dari input.bobot: ", input.BobotKriteria)
+
 	// METODE SAW
 	var hasilAkhir []HasilAkhir
 	for _, tabungan := range newTabunganInterpolasi {
@@ -287,7 +307,7 @@ func (c *ResultControllerImpl) HitungResult(ctx *gin.Context) {
 
 		newHasilAkhir.ID = tabungan.ID
 		newHasilAkhir.NamaTabungan = tabungan.NamaTabungan
-		newHasilAkhir.Skor = saw(tabungan, input.PresetKriteria)
+		newHasilAkhir.Skor = saw(tabungan, input.BobotKriteria)
 
 		hasilAkhir = append(hasilAkhir, newHasilAkhir)
 	}
