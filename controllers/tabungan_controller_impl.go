@@ -20,13 +20,13 @@ func NewTabunganController(tabunganService services.TabunganService) TabunganCon
 }
 
 func (c *TabunganControllerImpl) CreateTabungan(ctx *gin.Context) {
-	if _, err := ctx.Cookie("jwt"); err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"code":  http.StatusUnauthorized,
-			"error": err.Error(),
-		})
-		return
-	}
+	// if _, err := ctx.Cookie("jwt"); err != nil {
+	// 	ctx.JSON(http.StatusUnauthorized, gin.H{
+	// 		"code":  http.StatusUnauthorized,
+	// 		"error": err.Error(),
+	// 	})
+	// 	return
+	// }
 
 	var tabungan models.Tabungan
 	err := ctx.ShouldBindJSON(&tabungan)
@@ -99,13 +99,13 @@ func (c *TabunganControllerImpl) ListAllTabungan(ctx *gin.Context) {
 }
 
 func (c *TabunganControllerImpl) UpdateTabungan(ctx *gin.Context) {
-	if _, err := ctx.Cookie("jwt"); err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"code":  http.StatusUnauthorized,
-			"error": err.Error(),
-		})
-		return
-	}
+	// if _, err := ctx.Cookie("jwt"); err != nil {
+	// 	ctx.JSON(http.StatusUnauthorized, gin.H{
+	// 		"code":  http.StatusUnauthorized,
+	// 		"error": err.Error(),
+	// 	})
+	// 	return
+	// }
 
 	var tabungan models.Tabungan
 	err := ctx.ShouldBindJSON(&tabungan)
@@ -144,13 +144,13 @@ func (c *TabunganControllerImpl) UpdateTabungan(ctx *gin.Context) {
 }
 
 func (c *TabunganControllerImpl) DeleteTabungan(ctx *gin.Context) {
-	if _, err := ctx.Cookie("jwt"); err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"code":  http.StatusUnauthorized,
-			"error": err.Error(),
-		})
-		return
-	}
+	// if _, err := ctx.Cookie("jwt"); err != nil {
+	// 	ctx.JSON(http.StatusUnauthorized, gin.H{
+	// 		"code":  http.StatusUnauthorized,
+	// 		"error": err.Error(),
+	// 	})
+	// 	return
+	// }
 
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {

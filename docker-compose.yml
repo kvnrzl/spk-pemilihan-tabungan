@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  db:
+    container_name: mysql
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+      MYSQL_DATABASE: 'project_spk_pemilihan_tabungan'
+    volumes:
+      - final_project_mysql_db:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - final_project_network
+
+  backend:
+    container_name: golang-backend
+    image: golang-backend:latest
+    # environment:
+      # - JWT_SECRET_KEY = SECRET
+      # - JWT_EXPIRE_DURATION = 24
+      # - DB_USERNAME = root
+      # - DB_PASSWORD = 
+      # - DB_HOST = mysql
+      # - DB_PORT = 3306
+      # - DB_NAME = project_spk_pemilihan_tabungan
+    restart: always
+    ports:
+      - "8181:8181"
+    depends_on:
+      - db
+    networks:
+      - final_project_network
+
+  frontend:
+    container_name: flutter-web
+    image: flutter-web:latest
+    environment:
+      - BE-HOST = golang-backend
+      - BE-PORT = 8181
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - final_project_network
+
+networks:
+  final_project_network: 
+    name: final_project_network
+
+volumes:
+  final_project_mysql_db:

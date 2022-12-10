@@ -7,6 +7,7 @@ import (
 )
 
 func NewRouter(adminController controllers.AdminController, tabunganController controllers.TabunganController, presetController controllers.PresetKriteriaController, resultController controllers.ResultController) *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.Use(CORSMiddleware())
 	// router.RedirectTrailingSlash = false
@@ -21,26 +22,26 @@ func NewRouter(adminController controllers.AdminController, tabunganController c
 		{
 			admin.POST("/register", adminController.AdminRegister)
 			admin.POST("/login", adminController.AdminLogin)
-			admin.POST("/logout", adminController.AdminLogout)
+			admin.POST("/logout", VerifyToken(), adminController.AdminLogout)
 		}
 
 		tabungan := api.Group("/tabungan")
 		{
-			tabungan.POST("/create", tabunganController.CreateTabungan)
+			tabungan.POST("/create", VerifyToken(), tabunganController.CreateTabungan)
 			tabungan.GET("/list", tabunganController.ListAllTabungan)
 			detail := tabungan.Group("detail/:id")
 			{
 				detail.GET("/", tabunganController.DetailTabungan)
-				detail.PUT("/update", tabunganController.UpdateTabungan)
-				detail.DELETE("/delete", tabunganController.DeleteTabungan)
+				detail.PUT("/update", VerifyToken(), tabunganController.UpdateTabungan)
+				detail.DELETE("/delete", VerifyToken(), tabunganController.DeleteTabungan)
 			}
 		}
 
 		presetKriteria := api.Group("/preset")
 		{
 			presetKriteria.GET("/", presetController.FindFirstPreset)
-			presetKriteria.POST("/create", presetController.CreatePreset)
-			presetKriteria.PUT("/update", presetController.UpdatePreset)
+			presetKriteria.POST("/create", VerifyToken(), presetController.CreatePreset)
+			presetKriteria.PUT("/update", VerifyToken(), presetController.UpdatePreset)
 		}
 
 		result := api.Group("/result")

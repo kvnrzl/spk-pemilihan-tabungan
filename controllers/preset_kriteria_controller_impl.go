@@ -19,13 +19,13 @@ func NewPresetKriteriaController(presetKriteriaService services.PresetKriteriaSe
 }
 
 func (c *PresetKriteriaControllerImpl) CreatePreset(ctx *gin.Context) {
-	if _, err := ctx.Cookie("jwt"); err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"code":  http.StatusUnauthorized,
-			"error": "Unauthorized",
-		})
-		return
-	}
+	// if _, err := ctx.Cookie("jwt"); err != nil {
+	// 	ctx.JSON(http.StatusUnauthorized, gin.H{
+	// 		"code":  http.StatusUnauthorized,
+	// 		"error": "Unauthorized",
+	// 	})
+	// 	return
+	// }
 
 	var presetKriteria models.PresetKriteria
 	if err := ctx.ShouldBindJSON(&presetKriteria); err != nil {
@@ -70,13 +70,13 @@ func (c *PresetKriteriaControllerImpl) FindFirstPreset(ctx *gin.Context) {
 }
 
 func (c *PresetKriteriaControllerImpl) UpdatePreset(ctx *gin.Context) {
-	if _, err := ctx.Cookie("jwt"); err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"code":  http.StatusUnauthorized,
-			"error": "Unauthorized",
-		})
-		return
-	}
+	// if _, err := ctx.Cookie("jwt"); err != nil {
+	// 	ctx.JSON(http.StatusUnauthorized, gin.H{
+	// 		"code":  http.StatusUnauthorized,
+	// 		"error": "Unauthorized",
+	// 	})
+	// 	return
+	// }
 
 	var presetKriteria models.PresetKriteria
 	if err := ctx.ShouldBindJSON(&presetKriteria); err != nil {
